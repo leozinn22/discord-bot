@@ -5,30 +5,87 @@ var prefix = config.prefix;
 const ping = require('minecraft-server-util');
 
 
-//sistema de separar comandos
-  client.on('message', message => {
-    if (message.author.bot) return;
-    if (message.channel.type == 'dm') return;
-    if (!message.content.toLowerCase().startsWith(config.prefix)) return;
-    if (message.content.startsWith(`<@!${client.user.id}>`) || message.content.startsWith(`<@${client.user.id}>`)) return;
-
-   const args = message.content
-       .trim().slice(config.prefix.length)
-       .split(/ +/g);
-   const command = args.shift().toLowerCase();
-
-   try {
-       const commandFile = require(`./commands/${command}.js`)
-       commandFile.run(client, message, args);
-   } catch (err) {
-   console.error('Erro:' + err);
- }
-});
-
 //avisar que o bot tá on
 client.on("ready", () => {
-    console.log(`O bot foi iniciado !`);
-    });
+  console.log(`Bot foi iniciado, com ${client.users.cache.size} usuários, em ${client.channels.cache.size} canais, em ${client.guilds.cache.size} servidores.`);
+  //O numero de activies tem que ser igual ao numero de actions
+  let activities = [
+    `Utilize ${config.prefix}help para obter ajuda`,
+    `${client.guilds.cache.size} servidores!`,
+    `${client.channels.cache.size} canais!`,
+    `${client.users.cache.size} usuários!`,
+    `em Seu servidor`
+  ]
+  let actions = [
+    `WATCHING`,
+    `PLAYING`,
+    `LISTENING`,
+    `PLAYING`,
+    `PLAYING`
+  ],
+  i = 0;
+  j = 0;
+setInterval( () => client.user.setActivity(`${activities[i++ % activities.length]}`, {
+      type: `${actions[j++ % actions.length]}`
+    }), 1000*10);  // WATCHING, LISTENING, PLAYING, STREAMING
+ //Seta o Status do bot
+client.user
+    .setStatus("online") // idle = ausente, dnd = ocupado, online, invisible
+    .catch(console.error);
+  
+});
+client.on("message", async message => {
+  if (message.author.bot) return;
+  if (message.channel.type !== "dm") return;
+  if (!message.content.startsWith(config.prefix)) return;
+
+  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+  const comando = args.shift().toLowerCase();
+
+  if (comando === "quest") {
+    try {
+      message.channel.send("O céu é azul?")
+      message.channel.awaitMessages(m => m.author.id == message.author.id,
+        { max: 1, time: 30000 }).then(collected => {
+          //max = maximo
+          //time = tempo em que vai ser coletado contado em milisegundos 1000 * 30 = 30 segundos
+          if (collected.first().content.toLowerCase() == 'sim') {
+            console.log(collected.first().content) //valor digitado pelo membro
+            message.reply('Parabens você acertou');
+          }
+          else
+            message.reply('Tente novamente digitando uma resposta valida');
+        }).catch(() => {
+          message.reply('Você não pode ultrapasar os 30 segundos.');
+        });
+
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+});
+
+//sistema de separar comandos
+client.on("message", async mg => {
+    if (mg.author.bot) return;
+    if (mg.channel.type === "dm") return;
+    if (!mg.content.startsWith(prefix)) return;
+    if (mg.content.startsWith(`<@!${client.user.id}>`) || mg.content.startsWith(`<@${client.user.id}>`)
+    ) return;
+  
+    let args = mg.content.split(" ").slice(1);
+    let command = mg.content.split(" ")[0];
+    command = command.slice(prefix.length);
+    try {
+      let commandFile = require(`./commands/${command}.js`);
+      delete require.cache[require.resolve(`./commands/${command}.js`)];
+      return commandFile.run(client, mg, args);
+    } catch (err) {
+      console.error("Erro:" + err);
+    }
+  });
+
 
     //bem vindo 
 client.on("guildMemberAdd", async (member) =>{
