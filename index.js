@@ -41,7 +41,7 @@ client.on("guildMemberAdd", async (member) =>{
           .setColor('#191970')
           .setAuthor(member.user.tag, member.user.displayAvatarURL())
           .setTitle(`Boas Vindas`)
-          .setImage('https://images-ext-1.discordapp.net/external/MR8bSiU8ch1rlpg9hQdclu9XTpL7BlctTYMGjcOyBlw/%3Fsize%3D2048/https/cdn.discordapp.com/avatars/720078236276490350/bf49c108121a0fbe3b351ea0f3a3444e.png')
+          .setImage('url/caminho da sua imagem')
           .setDescription(`${member.user} Boas-vindas ao servidor ${guild.name} ! Atualmente estamos com ${member.guild.memberCount} membros`)
           .setThumbnail(member.user.displayAvatarURL({dynamic:true, format:"png",size:1024}))
           .setFooter('ID do usuário'  + member.user.id)
